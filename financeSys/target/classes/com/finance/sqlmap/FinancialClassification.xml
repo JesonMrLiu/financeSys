@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.finance.dao.FinancialClassificationDao">
+
+	<insert id="addFinance" parameterType="com.finance.entity.FinancialClassification">
+		<![CDATA[
+			INSERT INTO financialclassification (code, name, firstAmount, currentTotalAmount, createDate, userId)
+			VALUES(#{code}, #{name}, #{firstAmount}, #{currentTotalAmount}, sysdate(), #{userId})
+		]]>
+	</insert>
+
+	<!-- 更新理财分类 -->
+	<update id="updateFinance" parameterType="com.finance.entity.FinancialClassification">
+		<![CDATA[
+			UPDATE financialclassification SET id = #{id} 
+		]]>
+		<if test="code != null and code > 0">
+			, code = #{code}
+		</if>
+		<if test="name != null and name != ''">
+			, name = #{name}
+		</if>
+		<if test="firstAmount != null">
+			, currentTotalAmount = currentTotalAmount - firstAmount + #{firstAmount}
+			, firstAmount = #{firstAmount}
+		</if>
+		<![CDATA[
+			WHERE id = #{id}
+		]]>
+	</update>
+
+	<!-- 逻辑删除理财分类项 -->
+	<update id="logicDeleteFinanceById" parameterType="com.finance.entity.FinancialClassification">
+		<![CDATA[
+			UPDATE financialclassification SET isDeleted = 1, deleteTime = sysdate(), code = 0 - code WHERE id = #{id}
+		]]>
+	</update>
+
+	<!-- 删除理财分类记录 -->
+	<delete id="deleteFinanceById" parameterType="com.finance.entity.FinancialClassification">
+		<![CDATA[
+			DELETE FROM financialclassification where id = #{id}
+		]]>
+	</delete>
+
+	<!-- 查询出所有添加的理财分类 -->
+	<select id="findAllFinances" parameterType="com.finance.entity.FinancialClassification" resultType="com.finance.entity.FinancialClassification">
+		<![CDATA[
+			SELECT * FROM financialclassification WHERE userId = #{userId} AND isDeleted = 0 ORDER BY createDate DESC 
+		]]>
+	</select>
+
+	<!--获取已逻辑删除的理财分类记录 -->
+	<select id="findHasDeleteFinances" parameterType="java.util.HashMap" resultType="com.finance.entity.FinancialClassification">
+		<![CDATA[
+			SELECT * FROM financialclassification WHERE userId = #{userId} AND isDeleted = 1 
+		]]>	
+	</select>
+
+	<!-- 根据理财分类编号查询记录 -->
+	<select id="findFinanceByCode" parameterType="com.finance.entity.FinancialClassification" resultType="com.finance.entity.FinancialClassification">
+		<![CDATA[
+			SELECT * FROM financialclassification WHERE ABS(code) = ABS(#{code}) AND userId = #{userId}
+		]]>
+	</select>
+	
+	<!-- 新添加理财分类资金时添加投入资金记录 -->
+	<insert id="addFinanceRecord" parameterType="com.finance.entity.FinancialClassificationRecord">
+		<![CDATA[
+			INSERT INTO financialclassificationrecord(amount, invertTime, code, userId) 
+			VALUES(#{amount}, #{invertTime}, #{code}, #{userId})
+		]]>
+	</insert>
+	
+	<!-- 根据ID获取理财分类记录 -->
+	<select id="findFinanceById" parameterType="com.finance.entity.FinancialClassification" resultType="com.finance.entity.FinancialClassification">
+		<![CDATA[
+			SELECT * FROM financialclassification WHERE id = #{id}
+		]]>
+	</select>
+	
+	<!-- 理财分类更改相关资金 -->
+	<!-- 1、提现或追投资金：需要更改①-当前金钱总额；②-本月提现金额；③-提现总额 -->
+	<!-- 2、盈亏：修改更改①-昨日盈亏；②-当前金额总额；③-盈亏总计 -->
+	<!-- 
+		1、追投（amount、oldAmount为正数）
+			1）新增：当前总金额+amount, 
+			2）修改：当前总金额+amount-oldAmount,
+		
+		2、提现（amount、oldAmount为负数）
+			1）新增：当前总金额+amount, 本月提现+amount, 提现总额+amount
+			2）修改：当前总金额+amount-oldAmount, 本月提现+amount-oldAmount, 提现总额+amount-oldAmount
+			
+		3、盈利(amount、oldAmount为正数)
+			1）新增：当前总金额+amount，昨日盈亏+amount，盈亏总计+amount
+			2）修改：当前总金额+amount-oldAmount，昨日盈亏+amount-oldAmount, 盈亏总计+amount-oldAmount
+			
+		4、亏损（amount、oldAmount为负数）
+			1）新增：当前总金额+amount，昨日盈亏+amount，盈亏总计+amount
+			2）修改：当前总金额+amount-oldAmount，昨日盈亏+amount-oldAmount, 盈亏总计+amount-oldAmount
+	 -->
+	<update id="updateFinanceAmount" parameterType="java.util.HashMap">
+		<![CDATA[
+			UPDATE financialclassification set code = #{code} 
+		]]>
+		<choose>
+			<when test="type == 1">
+				, currentTotalAmount = #{amount} + currentTotalAmount
+				, investInTotal = #{amount} + investInTotal 
+			</when>
+			<when test="type == 2">
+				, currentTotalAmount = #{amount} + currentTotalAmount
+				, withdrawalsInTotal = #{amount} + withdrawalsInTotal
+			</when>
+			<when test="type == 3">
+				, currentTotalAmount = #{amount} + currentTotalAmount
+				, lastProfitOrLoss = #{amount} + lastProfitOrLoss
+				, totalProfitOrLossAmount = #{amount} + totalProfitOrLossAmount
+			</when>
+		</choose>
+		<![CDATA[
+			WHERE code = #{code} AND userId = #{userId}
+		]]>
+	</update>
+	
+	<!-- 更新理财分类提现与追投记录 -->
+	<update id="updateFinanceRecordById" parameterType="com.finance.entity.FinancialClassificationRecord">
+		<![CDATA[
+			UPDATE financialclassificationrecord SET id = #{id}
+		]]>
+		<if test="code != null and code != ''">
+			,code = #{code}
+		</if>
+		<if test="amount != null">
+			,amount = #{amount}
+		</if>
+		<if test="invertTime != null">
+			,invertTime = #{invertTime}
+		</if>
+		<if test="userId != null and userId > 0">
+			,userId = #{userId}
+		</if>
+		<![CDATA[
+			WHERE id = #{id}
+		]]>
+	</update>
+	
+	<!-- 理财分类增加资金，当前总金额增加这个新增的金额 -->
+	<update id="currentAmountAddNewInvert" parameterType="com.finance.entity.FinancialClassification">
+		<![CDATA[
+			UPDATE financialclassification SET currentTotalAmount = currentTotalAmount + #{currentTotalAmount} WHERE code = #{code} AND userId = #{userId}
+		]]>
+	</update>
+	
+	<!-- 查询理财分类提现或入账记录 -->
+	<select id="findRecords" parameterType="java.util.HashMap" resultType="com.finance.entity.FinancialClassificationRecord">
+		<![CDATA[
+			SELECT t1.name, t2.*
+			FROM financialclassification t1, financialclassificationrecord t2
+			WHERE ABS(t1.code) = ABS(t2.code) AND t2.userId = #{userId} 
+		]]>
+		<choose>
+			<when test="isDeleted != null">
+				AND t2.isDeleted = #{isDeleted}
+			</when>
+			<otherwise>
+				AND t2.isDeleted = 0
+			</otherwise>
+		</choose>
+		<if test="code != null">
+			AND ABS(t2.code) = ABS(#{code})
+		</if>
+		<if test="startDate != null">
+			AND t2.invertTime &gt;= #{startDate}
+		</if>
+		<if test="endDate != null">
+			AND t2.invertTime &lt;= #{endDate}
+		</if>
+	</select>
+	
+	<!-- 逻辑删除理财分类提现或入账记录 -->
+	<update id="logicDeleteRecordById" parameterType="com.finance.entity.FinancialClassificationRecord">
+		<![CDATA[
+			UPDATE financialclassificationrecord SET isDeleted = 1, deleteTime = sysdate(), code = 0 - code WHERE id = #{id}
+		]]>
+	</update>
+	
+	<!-- 删除理财分类提现或入账记录 -->
+	<delete id="deleteRecordById" parameterType="com.finance.entity.FinancialClassificationRecord">
+		<![CDATA[
+			DELETE FROM financialclassificationrecord WHERE id = #{id}
+		]]>
+	</delete>
+	
+	<!-- 根据Code删除记录 -->
+	<delete id="deleteRecordByCode" parameterType="com.finance.entity.FinancialClassification">
+		<![CDATA[
+			DELETE FROM financialclassificationrecord WHERE code = #{code} AND userId = #{userId}
+		]]>
+	</delete>
+	
+	<!-- 根据ID获取理财分类提现追加投入记录数据 -->
+	<select id="getRecordById" parameterType="com.finance.entity.FinancialClassificationRecord" resultType="com.finance.entity.FinancialClassificationRecord">
+		<![CDATA[
+			SELECT t2.name, t1.* 
+			FROM financialclassificationrecord t1, financialclassification t2
+			WHERE t1.code = t2.code AND t1.id = #{id} 
+		]]>
+		<choose>
+			<when test="isDeleted != null">
+				AND t2.isDeleted = #{isDeleted}
+			</when>
+			<otherwise>
+				AND t2.isDeleted = 0
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 逻辑删除理财分类编号为#{code}的提现、追投记录 -->
+	<update id="logicDeleteRecordByCode" parameterType="com.finance.entity.FinancialClassification">
+		<![CDATA[
+			UPDATE financialclassificationrecord SET isDeleted = 1, deleteTime = sysdate() WHERE code = #{code} AND userId = #{userId}
+		]]>
+	</update>
+	
+</mapper>

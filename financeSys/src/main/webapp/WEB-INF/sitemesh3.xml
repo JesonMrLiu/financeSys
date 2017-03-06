@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sitemesh>
+     <mapping path="/*" decorator="/pages/common/common.jsp" />
+ 
+     <!-- 需要排除的页面，不被装饰 -->
+     <mapping path="/login*" exclue="true" />
+     <mapping path="*/modal/*" exclue="true"/>
+    
+</sitemesh>

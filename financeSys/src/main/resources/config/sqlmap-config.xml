@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC 
+	"-//mybatis.org//DTD Config 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<plugins>
+		<plugin interceptor="com.github.miemiedev.mybatis.paginator.OffsetLimitInterceptor">
+			<property name="dialectClass" value="com.github.miemiedev.mybatis.paginator.dialect.MySQLDialect"/>
+		</plugin>
+	</plugins>
+
+  <mappers>
+     <mapper resource="com/finance/sqlmap/FinancialClassification.xml"/>
+     <mapper resource="com/finance/sqlmap/FinancialClassificationProfitOrLoss.xml"/>
+     <mapper resource="com/finance/sqlmap/User.xml"/>
+     <mapper resource="com/finance/sqlmap/Tally.xml"/>
+  </mappers>
+  
+</configuration>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.finance.dao.TallyDao">
+	<!-- 查询账目信息 -->
+	<select id="getTallys" parameterType="java.util.HashMap" resultType="com.finance.entity.Tally">
+		<![CDATA[
+			SELECT * FROM tally WHERE userId = #{userId}
+		]]>
+		<choose>
+			<when test="isDeleted != null">
+				 AND isDeleted = #{isDeleted}
+			</when>
+			<otherwise>
+				 AND isDeleted = 0
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="month != null and month != ''">
+				AND date_format(tallyDate, '%Y-%m') = #{month}
+			</when>
+			<otherwise>
+				AND date_format(tallyDate, '%Y-%m') = date_format(sysdate(), '%Y-%m')
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 添加一条账单记录 -->
+	<insert id="addOneTally" parameterType="com.finance.entity.Tally">
+		<![CDATA[
+			INSERT INTO tally(title, type, amount, totalAmount, payType, payee, payer, typeName, remark, tallyDate, createDate, userId)
+			VALUES(#{title}, #{type}, #{amount}, #{totalAmount}, #{payType}, #{payee}, #{payer}, #{typeName}, #{remark}, #{tallyDate}, sysdate(), #{userId})
+		]]>
+	</insert>
+	
+	<!-- 添加多条账单 -->
+	<insert id="addMoreTallys" parameterType="java.util.HashMap">
+		<![CDATA[
+			INSERT INTO tally(title, type, amount, totalAmount, payType, payee, payer, typeName, remark, tallyDate, createDate, userId) VALUES
+		]]>
+		<foreach collection="datas" item="item" separator=",">
+			(#{item.title}, #{item.type}, #{item.amount}, #{item.totalAmount}, #{item.payType}, #{item.payee}, #{item.payer}, #{item.typeName}, #{item.remark}, #{item.tallyDate}, sysdate(), #{item.userId})
+		</foreach>
+	</insert>
+	
+	<!-- 逻辑删除记录 -->
+	<update id="logicDeleteById" parameterType="com.finance.entity.Tally">
+		<![CDATA[
+			UPDATE tally SET isDeleted = 1, deleteTime = sysdate() WHERER id = #{id}
+		]]>
+	</update>
+	
+	<!-- 物理删除 -->
+	<delete id="deleteById" parameterType="com.finance.entity.Tally">
+		<![CDATA[
+			DELETE FROM tally WHERE id = #{id}
+		]]>
+	</delete>
+	
+	<!-- 更新账单记录 -->
+	<update id="updateTallyById" parameterType="com.finance.entity.Tally">
+		<![CDATA[
+			UPDATE Tally SET id = #{id}
+		]]>
+		<if test="title != null and title != ''">
+			, title = #{title}
+		</if>
+		<if test="type != null and type > 0">
+			, type = #{type}
+		</if>
+		<if test="amount != null and amount > 0">
+			, amount = #{amount}
+		</if>
+		<if test="totalAmount != null and totalAmount > 0">
+			, totalAmount = #{totalAmount}
+		</if>
+		<if test="payType != null and payType > 0">
+			, payType = #{payType}
+		</if>
+		<if test="payee != null and payee != ''">
+			, payee = #{payee}
+		</if>
+		<if test="payer != null and payer != ''">
+			, payer = #{payer}
+		</if>
+		<if test="typeName != null and typeName != ''">
+			, typeName = #{typeName}
+		</if>
+		<if test="remark != null and remark != ''">
+			, remark = #{remark}
+		</if>
+		<if test="tallyDate != null">
+			, tallyDate = #{tallyDate}
+		</if>
+	</update>
+	
+	<!-- 获取最近的一条账目记录 -->
+	<select id="getLatelyTally" parameterType="com.finance.entity.Tally" resultType="com.finance.entity.Tally">
+		<![CDATA[
+			SELECT * FROM tally  WHERE userId = #{userId} 
+		]]>
+	</select>
+	
+	<!-- 根据ID获取记录 -->
+	<select id="getTallyById" parameterType="com.finance.entity.Tally" resultType="com.finance.entity.Tally">
+		<![CDATA[
+			SELECT * FROM tally WHERE id = #{id}
+		]]>
+	</select>
+</mapper>

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.finance.dao.FinancialClassificationProfitOrLossDao">
+	
+	<!-- 查询最近一个月的盈亏数据 -->
+	<select id="findDatasInLastestOneMonth" parameterType="java.util.HashMap" resultType="com.finance.entity.FinancialClassificationProfitOrLoss">
+		<![CDATA[
+			SELECT * FROM lcflProfitOrLoss WHERE code = #{code} AND ( profitLossDate <= #{endDate} AND profitLossDate >= #{startDate} ) AND userId = #{userId} 
+		]]>
+		<choose>
+			<when test="isDeleted != null">
+				AND isDeleted = #{isDeleted}
+			</when>
+			<otherwise>
+				AND isDeleted = 0
+			</otherwise>
+		</choose>
+		<![CDATA[	
+			 ORDER BY profitLossDate ASC 
+		]]>
+	</select>
+	
+	<!-- 添加多条记录 -->
+	<insert id="addMorePriftLoss" parameterType="java.util.HashMap">
+		<![CDATA[
+			INSERT INTO lcflProfitOrLoss(code, profitOrLossAmount, userId, profitLossDate, createDate) VALUES 
+		]]>
+		<foreach collection="datas" item="item" separator=",">
+			(#{item.code}, #{item.profitOrLossAmount}, #{item.userId}, #{item.profitLossDate}, sysdate())
+		</foreach>
+	</insert>
+	
+	<!-- 添加一条记录 -->
+	<insert id="addOneProfitLoss" parameterType="com.finance.entity.FinancialClassificationProfitOrLoss">
+		<![CDATA[
+			INSERT INTO lcflProfitOrLoss(code, profitOrLossAmount, userId, profitLossDate, createDate) 
+			VALUES(#{code}, #{profitOrLossAmount}, #{userId}, #{profitLossDate}, sysdate())
+		]]>
+	</insert>
+	
+	<!-- 查询某分类编码下某一天的记录 -->
+	<select id="findProfitLossByDay" parameterType="java.util.HashMap" resultType="com.finance.entity.FinancialClassificationProfitOrLoss">
+		<![CDATA[
+			select * from lcflProfitOrLoss where date_format(profitLossDate, '%Y-%m-%d') = #{day} and code = #{code} and userId = #{userId} and isDeleted = 0;
+		]]>
+	</select>
+	
+	<!-- 更新记录 -->
+	<update id="udpateProfitLoss" parameterType="com.finance.entity.FinancialClassificationProfitOrLoss">
+		<![CDATA[
+			UPDATE lcflProfitOrLoss SET id = #{id} 
+		]]>
+		<if test="code != null and code != ''">
+			, code = #{code} 
+		</if>
+		<if test="profitOrLossAmount != null and profitOrLossAmount != ''">
+			, profitOrLossAmount = #{profitOrLossAmount} 
+		</if>
+		<if test="profitLossDate != null and profitLossDate != ''">
+			, profitLossDate = #{profitLossDate} 
+		</if>
+		<![CDATA[
+			WHERE id = #{id}
+		]]>
+	</update>
+	
+	<!-- 查询盈亏记录 -->
+	<select id="findProfitLoss" parameterType="java.util.HashMap" resultType="com.finance.entity.FinancialClassificationProfitOrLoss">
+		<![CDATA[
+			SELECT t1.name, t2.*
+			FROM financialclassification t1, lcflProfitOrLoss t2
+			WHERE ABS(t1.code) = ABS(t2.code) AND t2.userId = #{userId} 
+		]]>
+		<choose>
+			<when test="isDeleted != null">
+				AND t2.isDeleted = #{isDeleted}
+			</when>
+			<otherwise>
+				AND t2.isDeleted = 0
+			</otherwise>
+		</choose>
+		<if test="code != null">
+			AND ABS(t2.code) = ABS(#{code})
+		</if>
+		<if test="startDate != null">
+			AND t2.profitLossDate &gt;= #{startDate}
+		</if>
+		<if test="endDate != null">
+			AND t2.profitLossDate &lt;= #{endDate}
+		</if>
+	</select>
+	
+	<!-- 根据ID获取盈亏记录 -->
+	<select id="findProfitLossById" parameterType="com.finance.entity.FinancialClassificationProfitOrLoss" resultType="com.finance.entity.FinancialClassificationProfitOrLoss">
+		<![CDATA[
+			SELECT * FROM lcflProfitOrLoss WHERE id = #{id}
+		]]>
+	</select>
+	
+	<!-- 逻辑删除盈亏记录 -->
+	<update id="logicDeleteById" parameterType="com.finance.entity.FinancialClassificationProfitOrLoss">
+		<![CDATA[
+			UPDATE lcflProfitOrLoss SET isDeleted = 1, deleteTime = sysdate(), code = 0 - code WHERE id = #{id}
+		]]>
+	</update>
+	
+	<!-- 删除记录 -->
+	<delete id="deleteById" parameterType="com.finance.entity.FinancialClassificationProfitOrLoss">
+		<![CDATA[
+			DELETE FROM lcflProfitOrLoss WHERE id = #{id}
+		]]>
+	</delete>
+	
+	<!-- 根据Code删除提现追投记录 -->
+	<delete id="deleteByCode" parameterType="com.finance.entity.FinancialClassification">
+		<![CDATA[
+			DELETE FROM lcflProfitOrLoss WHERE code = #{code} AND userId = #{userId}
+		]]>
+	</delete>
+	
+	<!-- 逻辑删除盈亏记录，根据code和userId -->
+	<update id="logicDeleteProfitlossByCode" parameterType="com.finance.entity.FinancialClassification">
+		<![CDATA[
+			UPDATE lcflProfitOrLoss SET isDeleted = 1, deleteTime = sysdate(), code = 0 - code WHERE code = #{code} AND userId = #{userId}
+		]]>
+	</update>
+	
+</mapper>
