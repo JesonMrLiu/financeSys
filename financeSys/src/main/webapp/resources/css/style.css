@@ -378,7 +378,7 @@ Header and header elements.
 }
 
 .header .nav > li.dropdown.user .dropdown-toggle {
-  padding: 6px 4px 7px 9px;
+  padding: 10px 4px 10px 9px;
 }
 
 .header .nav > li.dropdown.user .dropdown-toggle:hover {
@@ -5474,6 +5474,13 @@ input[type="search"] {
 	background-color:#ff0000;
 }
 .btn-red:hover{background-color:#da0d0d !important;color:#fff;}
+.btn-blue {
+	width:100%;
+	color:white;
+	background-color:#3963bd;
+}
+.btn-blue:hover{background-color:#3f5ea0 !important;color:#fff;}
+
 
 .red{color:red;}
 .green{color:green;}
@@ -5505,3 +5512,6 @@ input[type="search"] {
 .page-sidebar.nav-collapse.collapse{position:fixed;}
 /** 理财分类卡片，每行的第一个卡片左边为0px */
 .card-left-zero{margin-left:0px !important;}
+.logo h3{color:white;}
+
+.input-icon.left input {padding-left: 33px !important;}

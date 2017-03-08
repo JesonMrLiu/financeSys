@@ -15,7 +15,6 @@ import com.finance.util.DateUtils;
 import com.finance.util.KeysUtil;
 import com.finance.util.PropertiesUtils;
 
-import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -27,11 +26,11 @@ public class ParamController {
 	protected String super_path;
 	protected String static_path;
 	protected User user;
-	protected JRedisClient client;
+//	protected JRedisClient client;
 
 	protected void init() {
 		this.request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
-		this.client = (JRedisClient) AppContextUtils.getBeanById("redisClient");
+//		this.client = (JRedisClient) AppContextUtils.getBeanById("redisClient");
 
 		this.main_path = PropertiesUtils.getContextProperty("main");
 		this.super_path = PropertiesUtils.getContextProperty("super.main");
@@ -66,11 +65,7 @@ public class ParamController {
 			init();
 		}
 		//首先从redis中查找
-		user = (User) client.getCachObject(KeysUtil.LOGIN_USER_CACHE_KEY);
-		if(user == null) {
-			//从session中找user登录信息
-			user = (User) request.getSession().getAttribute(KeysUtil.LOGIN_USER_CACHE_KEY);
-		}
+		user = (User) request.getSession().getAttribute(KeysUtil.LOGIN_USER_CACHE_KEY);
 		return user;
 	}
 	

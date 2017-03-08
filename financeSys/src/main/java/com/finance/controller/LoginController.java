@@ -21,8 +21,6 @@ public class LoginController {
 
 	@Autowired
 	private UserService service;
-	@Autowired
-	private JRedisClient client;
 	
 	@RequestMapping(params = "method=login")
 	public String login(){
@@ -35,7 +33,7 @@ public class LoginController {
 	public ResultBean doLogin(@ModelAttribute User user, HttpServletRequest request){
 		ResultBean res = null;
 		try {
-			String isRemember = request.getParameter("remember");
+//			String isRemember = request.getParameter("remember");
 			User temp = service.getUserByUsername(user);
 			if(temp == null){
 				res = new ResultBean("抱歉，不存在【用户名："+user.getUsername()+"】的用户！！", false, "");
@@ -47,7 +45,7 @@ public class LoginController {
 				res = new ResultBean("抱歉，用户【"+user.getUsername()+"】的的登录密码有误！！", false, "");
 				return res;
 			}
-			client.addCacheObject(KeysUtil.LOGIN_USER_CACHE_KEY, temp, 24*3600);
+//			client.addCacheObject(KeysUtil.LOGIN_USER_CACHE_KEY, temp, 24*3600);
 			request.getSession().setAttribute(KeysUtil.LOGIN_USER_CACHE_KEY, temp);
 			res = new ResultBean("恭喜您，登录成功！！", true, "");
 		} catch (Exception e) {
@@ -56,4 +54,5 @@ public class LoginController {
 		}
 		return res;
 	}
+	
 }

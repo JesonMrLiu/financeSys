@@ -111,9 +111,8 @@ var LaValidForm = {
 			case "repassword" : 
 				if($(compareObj) != undefined && $.trim($(compareObj).val()) != ""){
 					if($.trim($(compareObj).val()) != $.trim($(obj).val())){
-						$(obj).parents("div.control-group").removeClass("default").removeClass("warning").removeClass("danger").removeClass("success").addClass("danger");
-						LaValidForm.initFormValidDivTips(obj);
-						 $(obj).parents("div.control-group").find("p.validate").html("两次输入的密码不一致").fadeIn(300);
+						$(obj).parents("div.control-group").removeClass("default").removeClass("warning").removeClass("success").addClass("warning");
+						 $(obj).parents("div.control-group").find("span.help-inline").html("两次输入的密码不一致").fadeIn(300);
 						 this.validResult = false;
 					} else {
 						$(obj).parents("div.control-group").addClass("success");	
@@ -298,7 +297,7 @@ var LaValidForm = {
 	/**
 	 * 销毁提示框
 	 */
-	destoryTips : function(obj){
+	destoryTips : function(obj){debugger;
 		$(obj).parents("div.control-group").find("span.help-inline").text("");
 	},
 	
@@ -412,7 +411,7 @@ var LaValidForm = {
 	 * 密码由6-16位数字、字母或常用符号组成，字母区分大小写，不能是纯数字或字母
 	 */
 	validPassword : function(val){
-		return /^[a-zA-Z0-9@#\$%\^&\*_\-\+=\.\\\(\)\{\}<>\[\]]{6,16}$/.test(val) ? (/^[\d]{6,16}$/.test(val) || /^[a-zA-Z]{6,16}$/.test(val) ? false :true) : false;
+		return val.length > 5;///^[a-zA-Z0-9@#\$%\^&\*_\-\+=\.\\\(\)\{\}<>\[\]]{6,16}$/.test(val) ? (/^[\d]{6,16}$/.test(val) || /^[a-zA-Z]{6,16}$/.test(val) ? false :true) : false;
 	},
 	
 	/**

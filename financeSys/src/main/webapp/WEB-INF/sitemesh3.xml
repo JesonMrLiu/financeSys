@@ -5,6 +5,7 @@
  
      <!-- 需要排除的页面，不被装饰 -->
      <mapping path="/login*" exclue="true" />
+     <mapping path="/register*" exclue="true" />
      <mapping path="*/modal/*" exclue="true"/>
     
 </sitemesh>

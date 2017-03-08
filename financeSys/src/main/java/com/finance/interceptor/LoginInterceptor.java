@@ -6,9 +6,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.bwdz.fpt.common.cache.JRedisClient;
 import com.finance.entity.User;
-import com.finance.util.AppContextUtils;
 import com.finance.util.KeysUtil;
 
 public class LoginInterceptor implements HandlerInterceptor {
@@ -28,15 +26,15 @@ public class LoginInterceptor implements HandlerInterceptor {
 	@Override
 	public boolean preHandle(HttpServletRequest arg0, HttpServletResponse arg1,
 			Object arg2) throws Exception {
-		JRedisClient client = (JRedisClient) AppContextUtils.getBeanById("redisClient");
+//		JRedisClient client = (JRedisClient) AppContextUtils.getBeanById("redisClient");
 		//查询用户是否已经登录，如果没有登录，那么就跳转到登录页面
-		User user = (User) client.getCachObject(KeysUtil.LOGIN_USER_CACHE_KEY);
+//		User user = (User) client.getCachObject(KeysUtil.LOGIN_USER_CACHE_KEY);
 		//查看session中是否有用户登陆信息
-		User temp = (User) arg0.getSession().getAttribute(KeysUtil.LOGIN_USER_CACHE_KEY);
+		User user = (User) arg0.getSession().getAttribute(KeysUtil.LOGIN_USER_CACHE_KEY);
 		//如果session中有用户登录信息，那么表名该用户正处于登录中，而redis中没有用户登录信息的话，那么就将用户登录信息保存到Redis中
-		if(temp != null && user == null){
-			client.addCacheObject(KeysUtil.LOGIN_USER_CACHE_KEY, temp, 24*3600);
-		}
+//		if(temp != null && user == null){
+//			client.addCacheObject(KeysUtil.LOGIN_USER_CACHE_KEY, temp, 24*3600);
+//		}
 		//获取请求的URI
 		String uri = arg0.getRequestURI();
 		//如果是正在登录，则直接跳过
@@ -56,6 +54,9 @@ public class LoginInterceptor implements HandlerInterceptor {
 			return true;
 		}
 		if(user == null){
+			if(uri.contains("registerController.do")) {
+				return true;
+			}
 			//检查session里面是否有用户信息
 			user = (User) arg0.getSession().getAttribute(KeysUtil.LOGIN_USER_CACHE_KEY);
 			if(user == null){
